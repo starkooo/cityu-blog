@@ -1,6 +1,7 @@
 package com.cityu.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cityu.blog.common.aop.LogAnnotation;
 import com.cityu.blog.dao.dos.Archives;
@@ -41,24 +42,54 @@ public class ArticleServiceImpl implements ArticleService {
     private ArticleTagMapper articleTagMapper;
 
     @Override
-    //加上此注解，代表要对此接口记录日志
-    @LogAnnotation(module = "文章",operator = "获取文章列表")
     public Result listArticle(PageParams pageParams) {
-        /**
-         * 1. 分页查询article数据库表
-         */
-        Page<Article> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
-        //查询条件
-        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        //是否置顶
-        //按时间排序
-        queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
-        Page<Article> articlePage = articleMapper.selectPage(page, queryWrapper);
-        List<Article> records = articlePage.getRecords();
-        //不能直接返回
-        List<ArticleVo> articleVoList = copyList(records,true,true);
-        return Result.success(articleVoList);
+        Page<Article> page = new Page<>(pageParams.getPage(),pageParams.getPageSize());
+        IPage<Article> articleIPage = this.articleMapper.listArticle(page,pageParams.getCategoryId(),pageParams.getTagId(),pageParams.getYear(),pageParams.getMonth());
+        return Result.success(copyList(articleIPage.getRecords(),true,true));
     }
+
+
+//    @Override
+//    //加上此注解，代表要对此接口记录日志
+//    @LogAnnotation(module = "文章",operator = "获取文章列表")
+//    public Result listArticle(PageParams pageParams) {
+//        /**
+//         * 1. 分页查询article数据库表
+//         */
+//        Page<Article> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
+//        //查询条件
+//        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+//
+//        //查询文章的参数 加上分类id，判断不为空 加上分类条件
+//        if (pageParams.getCategoryId()!=null) {
+//            //and category_id=#{categoryId}
+//            queryWrapper.eq(Article::getCategoryId,pageParams.getCategoryId());
+//        }
+//
+//        List<Long> articleIdList = new ArrayList<>();
+//        if (pageParams.getTagId()!=null) {
+//            //article表中，并没有tag字段 一篇文章可能有多个标签
+//            //article_tag表 article_id 1:n tag_id
+//            LambdaQueryWrapper<ArticleTag> articleTagLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//            articleTagLambdaQueryWrapper.eq(ArticleTag::getTagId, pageParams.getTagId());
+//            List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagLambdaQueryWrapper);
+//            for (ArticleTag articleTag : articleTags) {
+//                articleIdList.add(articleTag.getArticleId());
+//            }
+//            if (articleIdList.size()>0){
+//                queryWrapper.in(Article::getId, articleIdList);
+//            }
+//        }
+//
+//        //是否置顶
+//        //按时间排序
+//        queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
+//        Page<Article> articlePage = articleMapper.selectPage(page, queryWrapper);
+//        List<Article> records = articlePage.getRecords();
+//        //不能直接返回
+//        List<ArticleVo> articleVoList = copyList(records,true,true);
+//        return Result.success(articleVoList);
+//    }
 
     @Override
     public Result hotArticle(int limit) {
