@@ -21,6 +21,7 @@ public class SysUserServiceImpl implements SysUserService {
     @Autowired
     private LoginService loginService;
 
+    @Override
     public UserVo findUserVoById(Long id) {
         SysUser sysUser = sysUserMapper.selectById(id);
         if (sysUser == null){
