@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @MapperScan("com.cityu.blog.dao.mapper")
 public class MyBatisPlusConfig {
     //分页插件
+    // @Configuration可理解为用spring的时候xml里面的<beans>标签。
+    // @Bean可理解为用spring的时候xml里面的<bean>标签。
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor(){
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
